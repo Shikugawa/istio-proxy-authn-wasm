@@ -1,9 +1,15 @@
-[submodule "api"]
-	path = api
-	url = https://github.com/istio/api.git
 [submodule "deps/googleapis"]
 	path = deps/googleapis
 	url = https://github.com/googleapis/googleapis.git
 [submodule "deps/envoy"]
 	path = deps/envoy
 	url = https://github.com/envoyproxy/envoy.git
+[submodule "deps/udpa"]
+	path = deps/udpa
+	url = https://github.com/cncf/udpa.git
+[submodule "deps/protoc-gen-validate"]
+	path = deps/protoc-gen-validate
+	url = https://github.com/envoyproxy/protoc-gen-validate.git
+[submodule "deps/api"]
+	path = deps/api
+	url = https://github.com/istio/api.git

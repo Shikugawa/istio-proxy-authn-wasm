@@ -20,7 +20,7 @@
 
 #include "envoy/config/filter/http/authn/v2alpha1/config.pb.h"
 
-// #include "authn/authenticator_base.h"
+#include "authenticator/authenticator_base.h"
 
 namespace Envoy {
 namespace Extensions {
