@@ -15,21 +15,27 @@
 
 #pragma once
 
+#include <vector>
+#include <memory>
+
+#include <absl/strings/string_view.h>
+
 #include "authentication/v1alpha1/policy.pb.h"
 #include "envoy/config/filter/http/authn/v2alpha1/config.pb.h"
 
 #include "envoy/config/core/v3/base.pb.h"
 
-#include "envoy/http/filter.h"
-#include "envoy/network/connection.h"
-#include "extensions/filters/http/well_known_names.h"
+#include "istio/authn/context.pb.h"
 
-#include "src/istio/authn/context.pb.h"
+using RequestHeader = std::vector<std::pair<absl::string_view, absl::string_view>>;
 
 namespace Envoy {
 namespace Http {
 namespace Istio {
 namespace AuthN {
+
+struct TlsPeerCertificateInfo {};
+struct TlsLocalCertificateInfo {};
 
 // FilterContext holds inputs, such as request dynamic metadata and connection
 // and result data for authentication process.
@@ -37,14 +43,16 @@ class FilterContext {
  public:
   FilterContext(
       const envoy::config::core::v3::Metadata& dynamic_metadata,
-      const RequestHeaderMap& header_map, const Network::Connection* connection,
+      const RequestHeader& header_map,
+      const TlsPeerCertificateInfo& peer_cert_info,
+      const TlsLocalCertificateInfo& local_cert_info,
       const istio::envoy::config::filter::http::authn::v2alpha1::FilterConfig&
           filter_config)
       : dynamic_metadata_(dynamic_metadata),
         header_map_(header_map),
-        connection_(connection),
+        peer_cert_info_(peer_cert_info),
+        local_cert_info_(local_cert_info),
         filter_config_(filter_config) {}
-  virtual ~FilterContext() {}
 
   // Sets peer result based on authenticated payload. Input payload can be null,
   // which basically changes nothing.
@@ -62,11 +70,14 @@ class FilterContext {
   // Returns the authentication result.
   const istio::authn::Result& authenticationResult() { return result_; }
 
-  // Accessor to connection
-  const Network::Connection* connection() { return connection_; }
+  // Accessor to peer certificate
+  const TlsPeerCertificateInfo& peerCertificateInfo() { return peer_cert_info_; }
+  // Accessor to local certificate
+  const TlsLocalCertificateInfo& localCertificateInfo() { return local_cert_info_; }
+
   // Accessor to the filter config
   const istio::envoy::config::filter::http::authn::v2alpha1::FilterConfig&
-  filter_config() const {
+  filterConfig() const {
     return filter_config_;
   }
 
@@ -75,7 +86,7 @@ class FilterContext {
   // returns false.
   bool getJwtPayload(const std::string& issuer, std::string* payload) const;
 
-  const RequestHeaderMap& headerMap() const { return header_map_; }
+  const RequestHeader& headerMap() const { return header_map_; }
 
  private:
   // Helper function for getJwtPayload(). It gets the jwt payload from Envoy jwt
@@ -93,10 +104,13 @@ class FilterContext {
 
   // Const reference to header map of the request. This provides request path
   // that could be used to decide if a JWT should be used for validation.
-  const RequestHeaderMap& header_map_;
+  const RequestHeader& header_map_;
 
-  // Pointer to network connection of the request.
-  const Network::Connection* connection_;
+  // Pointer to local certificate info on network connection of the request.
+  const TlsLocalCertificateInfo& local_cert_info_;
+
+  // Pointer to peer certificate info on network connection of the request.
+  const TlsPeerCertificateInfo& peer_cert_info_;
 
   // Holds authentication attribute outputs.
   istio::authn::Result result_;

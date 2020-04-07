@@ -41,6 +41,8 @@ bool AuthnRootContext::onConfigure(size_t) {
   }
 
   logDebug(configuration->toString());
+  bool value;
+  getValue({"connection", "subject_local_certificate"}, &value);
   return true;
 }
 
