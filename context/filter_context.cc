@@ -1,4 +1,4 @@
-/* Copyright 2018 Istio Authors. All Rights Reserved.
+/* Copyright 2020 Istio Authors. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,15 +27,15 @@ void FilterContext::setPeerResult(const istio::authn::Payload* payload) {
   if (payload != nullptr) {
     switch (payload->payload_case()) {
       case Payload::kX509:
-        ENVOY_LOG(debug, "Set peer from X509: {}", payload->x509().user());
+        logDebug("Set peer from X509: ", payload->x509().user());
         result_.set_peer_user(payload->x509().user());
         break;
       case Payload::kJwt:
-        ENVOY_LOG(debug, "Set peer from JWT: {}", payload->jwt().user());
+        logDebug("Set peer from JWT: ", payload->jwt().user());
         result_.set_peer_user(payload->jwt().user());
         break;
       default:
-        ENVOY_LOG(debug, "Payload has not peer authentication data");
+        logDebug("Payload has not peer authentication data");
         break;
     }
   }
@@ -54,17 +54,18 @@ void FilterContext::setOriginResult(const istio::authn::Payload* payload) {
 void FilterContext::setPrincipal(const istio::authentication::v1alpha1::PrincipalBinding& binding) {
   switch (binding) {
     case istio::authentication::v1alpha1::PrincipalBinding::USE_PEER:
-      ENVOY_LOG(debug, "Set principal from peer: {}", result_.peer_user());
+      logDebug("Set principal from peer: ", result_.peer_user());
       result_.set_principal(result_.peer_user());
       return;
     case istio::authentication::v1alpha1::PrincipalBinding::USE_ORIGIN:
-      ENVOY_LOG(debug, "Set principal from origin: {}",
-                result_.origin().user());
+      logDebug("Set principal from origin: ", result_.origin().user())
       result_.set_principal(result_.origin().user());
       return;
     default:
       // Should never come here.
-      ENVOY_LOG(error, "Invalid binding value {}", binding);
+      // TODO(shikugawa): add wasm logger and enable to write logging like under format.
+      // e.g. logDebug("Invalid binding value", binding)
+      logDebug("Invalid binding value");
       return;
   }
 }
@@ -82,7 +83,7 @@ bool FilterContext::getJwtPayloadFromEnvoyJwtFilter(
   // Try getting the Jwt payload from Envoy jwt_authn filter.
   auto filter_it = dynamic_metadata_.filter_metadata().find("envoy.filters.http.jwt_authn");
   if (filter_it == dynamic_metadata_.filter_metadata().end()) {
-    ENVOY_LOG(debug, "No dynamic_metadata found for filter envoy.filters.http.jwt_authn");
+    logDebug("No dynamic_metadata found for filter envoy.filters.http.jwt_authn");
     return false;
   }
 
@@ -112,8 +113,7 @@ bool FilterContext::getJwtPayloadFromIstioJwtFilter(
   auto filter_it =
       dynamic_metadata_.filter_metadata().find(Utils::IstioFilters::JwtAuthFilter);
   if (filter_it == dynamic_metadata_.filter_metadata().end()) {
-    ENVOY_LOG(debug, "No dynamic_metadata found for filter {}",
-              Utils::IstioFilters::JwtAuthFilter);
+    logDebug("No dynamic_metadata found for filter ", Utils::IstioFilters::JwtAuthFilter);
     return false;
   }
 

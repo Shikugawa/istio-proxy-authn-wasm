@@ -1,4 +1,4 @@
-/* Copyright 2018 Istio Authors. All Rights Reserved.
+/* Copyright 2020 Istio Authors. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
 #pragma once
 
 #include "context/filter_context.h"
+
+#include "authentication/v1alpha1/policy.pb.h"
+#include "istio/authn/context.pb.h"
 
 namespace Envoy {
 namespace Http {
@@ -47,7 +50,7 @@ class AuthenticatorBase {
                            istio::authn::Payload* payload);
 
   // Mutable accessor to filter context.
-  FilterContext* filter_context() { return &filter_context_; }
+  FilterContext* FilterContext() { return &filter_context_; }
 
  private:
   // Pointer to filter state. Do not own.
