@@ -41,13 +41,12 @@ namespace AuthN {
 // and result data for authentication process.
 class FilterContext {
  public:
+  // TODO(shikugawa): metadata information insertion to FilterContext
   FilterContext(
-      const envoy::config::core::v3::Metadata& dynamic_metadata,
       const RequestHeader& header_map,
       const istio::envoy::config::filter::http::authn::v2alpha1::FilterConfig&
           filter_config)
-      : dynamic_metadata_(dynamic_metadata),
-        header_map_(header_map),
+      : header_map_(header_map),
         filter_config_(filter_config) {
     // Check handled connection is tls or not by checking tls version. 
     // If we can retrieve tls version, handled connection is tls.
@@ -89,21 +88,22 @@ class FilterContext {
   // Gets JWT payload (output from JWT filter) for given issuer. If non-empty
   // payload found, returns true and set the output payload string. Otherwise,
   // returns false.
-  bool getJwtPayload(const std::string& issuer, std::string* payload) const;
+  bool getJwtPayload(const std::string& issuer, std::string* payload) const { return true; };
 
   const RequestHeader& headerMap() const { return header_map_; }
 
   bool isTls() { return is_tls_; }
 
  private:
+  // TODO(shikugawa): JWT implementation, required metadata retrieval.
   // Helper function for getJwtPayload(). It gets the jwt payload from Envoy jwt
   // filter metadata and write to |payload|.
   bool getJwtPayloadFromEnvoyJwtFilter(const std::string& issuer,
-                                       std::string* payload) const;
+                                       std::string* payload) const { return true; };
   // Helper function for getJwtPayload(). It gets the jwt payload from Istio jwt
   // filter metadata and write to |payload|.
   bool getJwtPayloadFromIstioJwtFilter(const std::string& issuer,
-                                       std::string* payload) const;
+                                       std::string* payload) const { return true; };
 
   // Const reference to request info dynamic metadata. This provides data that
   // output from other filters, e.g JWT.

@@ -20,7 +20,7 @@
 
 #include "authentication/v1alpha1/policy.pb.h"
 
-// #include "authn/peer_authenticator.h"
+#include "authn/peer_authenticator.h"
 
 namespace Envoy {
 namespace Extensions {
@@ -41,29 +41,10 @@ bool AuthnRootContext::onConfigure(size_t) {
   }
 
   logDebug(configuration->toString());
-  bool value;
-  getValue({"connection", "subject_local_certificate"}, &value);
   return true;
 }
 
 FilterHeadersStatus AuthnContext::onRequestHeaders(uint32_t) {
-  WasmDataPtr header_pairs = getRequestHeaderPairs();
-  auto header = header_pairs->pairs();
-  const auto& config = filterConfig();
-  for (const auto& method : config.policy().peers()) {
-    switch (method.params_case()) {
-      case istio::authentication::v1alpha1::PeerAuthenticationMethod::ParamsCase::kMtls:
-        logDebug("peer authentication for mTLS:\n" + method.DebugString());
-        break;
-      case istio::authentication::v1alpha1::PeerAuthenticationMethod::ParamsCase::kJwt: 
-        // TODO(shikugawa): should output deprecation message of Jwt method
-        logDebug("peer authentication for JWT:\n" + method.DebugString());
-        break;
-      default:
-        logDebug("unknown peer authentication:\n" + method.DebugString());
-        break;
-    }
-  }
   return FilterHeadersStatus::Continue;
 }
 

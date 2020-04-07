@@ -43,16 +43,16 @@ public:
   bool validateConfiguration(size_t) override { return true; }
   bool onConfigure(size_t) override;
   bool onStart(size_t) override { return true; }
-  void onTick() override { logDebug("called AuthnRootContext::onTick()"); }
-  void onQueueReady(uint32_t) override { logDebug("called AuthnRootContext::onQueueReady()"); }
+  void onTick() override {}
+  void onQueueReady(uint32_t) override {}
   bool onDone() override { return true; }
+
   // Low level HTTP/gRPC interface.
-  void onHttpCallResponse(uint32_t token, uint32_t headers, size_t body_size,
-                                  uint32_t trailers) override { logDebug("called AuthnRootContext::onHttpCallResponse()"); }
-  void onGrpcReceiveInitialMetadata(uint32_t token, uint32_t headers) override { logDebug("called AuthnRootContext::onGrpcReceiveInitialMetadata()"); }
-  void onGrpcReceiveTrailingMetadata(uint32_t token, uint32_t trailers) override { logDebug("called AuthnRootContext::onGrpcReceiveInitialMetadata()"); }
-  void onGrpcReceive(uint32_t token, size_t body_size) override { logDebug("called AuthnRootContext::onGrpcReceiveInitialMetadata()"); }
-  void onGrpcClose(uint32_t token, GrpcStatus status) override { logDebug("called AuthnRootContext::onGrpcReceiveInitialMetadata()"); }
+  void onHttpCallResponse(uint32_t token, uint32_t headers, size_t body_size, uint32_t trailers) override {}
+  void onGrpcReceiveInitialMetadata(uint32_t token, uint32_t headers) override {}
+  void onGrpcReceiveTrailingMetadata(uint32_t token, uint32_t trailers) override {}
+  void onGrpcReceive(uint32_t token, size_t body_size) override {}
+  void onGrpcClose(uint32_t token, GrpcStatus status) override {}
 
   const FilterConfig& filterConfig() { return filter_config_; };
 
@@ -62,7 +62,7 @@ public:
 
 // Per-stream context.
 class AuthnContext : public Context {
- public:
+public:
   explicit AuthnContext(uint32_t id, RootContext* root) : Context(id, root) {}
   ~AuthnContext() = default;
 
@@ -89,12 +89,20 @@ class AuthnContext : public Context {
     return rootContext()->filterConfig();
   };
 
- private:
-  // std::unique_ptr<Istio::AuthN::AuthenticatorBase> createPeerAuthenticator();
+private:
+  std::unique_ptr<Istio::AuthN::AuthenticatorBase> createPeerAuthenticator(
+    Istio::AuthN::FilterContext* filter_context);
+  // TODO(shikugawa): origin authenticator implementation.
+  // std::unique_ptr<Istio::AuthN::AuthenticatorBase> createOriginAuthenticator(
+  //   Istio::AuthN::FilterContext* filter_context);
 
   inline AuthnRootContext* rootContext() {
     return dynamic_cast<AuthnRootContext*>(this->root());
   };
+
+  // Context for authentication process. Created in decodeHeader to start
+  // authentication process.
+  std::unique_ptr<Istio::AuthN::FilterContext> filter_context_;
 };
 
 static RegisterContextFactory register_AuthnWasm(
