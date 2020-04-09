@@ -20,16 +20,15 @@
 
 #include "authentication/v1alpha1/policy.pb.h"
 
-#include "authn/peer_authenticator.h"
+#include "context/connection_context.h"
+#include "authenticator/peer_authenticator.h"
 
 namespace Envoy {
 namespace Extensions {
 namespace Wasm {
-namespace AuthnWasm {
+namespace AuthN {
 
 bool AuthnRootContext::onConfigure(size_t) {
-  logDebug("called AuthnRootContext::onConfigure()");
-
   WasmDataPtr configuration = getConfiguration();
   google::protobuf::util::JsonParseOptions json_options;
   google::protobuf::util::Status status = JsonStringToMessage(configuration->toString(),
@@ -40,11 +39,25 @@ bool AuthnRootContext::onConfigure(size_t) {
     return false;
   }
 
-  logDebug(configuration->toString());
+  logInfo("Istio AuthN filter is started with this configuration: ", configuration->toString());
   return true;
 }
 
 FilterHeadersStatus AuthnContext::onRequestHeaders(uint32_t) {
+  const auto context = ConnectionContext();
+  filter_context_.reset(
+    new Istio::AuthN::FilterContext(getRequestHeader()->pairs(), context, filter_config_));
+
+  istio::authn::Payload payload;
+
+  if (PeerAuthenticator::create(filter_context_) && filter_config_.policy().peer_is_optional()) {
+    logError("Peer authentication failed.");
+    return FilterHeadersStatus::StopIteration;
+  }
+
+  // TODO(shikugawa): origin authenticator
+  // TODO(shikugawa): save authenticate result state as dynamic metadata
+
   return FilterHeadersStatus::Continue;
 }
 

@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include <memory>
+
 #include "context/filter_context.h"
 
 #include "authentication/v1alpha1/policy.pb.h"
@@ -34,7 +36,7 @@ class AuthenticatorBase {
   virtual ~AuthenticatorBase();
 
   // Perform authentication.
-  virtual bool run(istio::authn::Payload*) PURE;
+  virtual bool run(istio::authn::Payload*) = 0;
 
   // Validate TLS/MTLS connection and extract authenticated attributes (just
   // source user identity for now). Unlike mTLS, TLS connection does not require
@@ -50,13 +52,11 @@ class AuthenticatorBase {
                            istio::authn::Payload* payload);
 
   // Mutable accessor to filter context.
-  FilterContext* FilterContext() { return &filter_context_; }
+  FilterContextPtr& filterContext() { return filter_context_; }
 
  private:
   // Pointer to filter state. Do not own.
-  FilterContext& filter_context_;
-
-  bool validateTrustDomain(const Network::Connection* connection) const;
+  FilterContextPtr filter_context_;
 };
 
 }  // namespace AuthN

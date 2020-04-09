@@ -1,4 +1,4 @@
-/* Copyright 2018 Istio Authors. All Rights Reserved.
+/* Copyright 2020 Istio Authors. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 
 #include <cstdlib>
 
+#include "absl/strings/string_view.h"
 #include "authenticator/authenticator_base.h"
 
 namespace Envoy {
@@ -24,7 +25,7 @@ namespace AuthN {
 
 namespace {
 // The default header name for an exchanged token
-static const std::string kExchangedTokenHeaderName = "ingress-authorization";
+static constexpr absl::string_view kExchangedTokenHeaderName = "ingress-authorization";
 
 // Returns whether the header for an exchanged token is found
 bool FindHeaderOfExchangedToken(const istio::authentication::v1alpha1::Jwt& jwt) {
@@ -107,7 +108,8 @@ bool AuthenticatorBase::validateX509(const istio::authentication::v1alpha1::Mutu
 }
 
 // TODO(shikugawa): implement validateJWT
-bool AuthenticatorBase::validateJwt(const istio::authentication::v1alpha1::Jwt& params, istio::authn::Payload* payload) {
+bool AuthenticatorBase::validateJwt(
+  const istio::authentication::v1alpha1::Jwt& params, istio::authn::Payload* payload) {
   return true;
 }
 

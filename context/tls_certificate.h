@@ -13,10 +13,10 @@
  * limitations under the License.
  */
 
-#include <type_traits>
 #include <string>
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "absl/strings/match.h"
 
@@ -25,9 +25,9 @@ namespace Http {
 namespace Istio {
 namespace AuthN {
 
-constexpr char* kSPIFFEPrefix = "spiffe://";
+constexpr absl::string_view kSPIFFEPrefix = "spiffe://";
 
-template <class Derived, typename = std::enable_if_t<TlsCertificateInfo, Derived>*>
+template <class Derived>
 class TlsCertificateInfo {
 public:
   absl::optional<std::string> getCertSans() {
@@ -37,7 +37,7 @@ public:
         return uri_san;
       }
     }
-    if (!uri_sans_.empty()) {
+    if (!uri_sans.empty()) {
       return uri_sans[0];
     }
     return absl::nullopt;
@@ -55,7 +55,7 @@ public:
   }
 
   absl::optional<std::string> getTrustDomain() {
-    const auto cert_san = getCertSAN();
+    const auto cert_san = getCertSans();
     if (!cert_san.has_value() || !absl::StartsWith(cert_san.value(), kSPIFFEPrefix)) {
       return absl::nullopt;
     }
@@ -72,28 +72,27 @@ public:
 };
 
 class TlsPeerCertificateInfo : public TlsCertificateInfo<TlsPeerCertificateInfo> {
-public:  
+public:
   // getter
-  const std::string& serialNumber() { return serial_number_; } 
-  const std::string& issuer() { return issuer_; } 
-  const std::string& subject() { return subject_; } 
-  const std::string& sha256Digest() { return sha256_digest_; } 
-  const bool validated() { return validated_; }
-  const bool presented() { return presented_; }
-  const std::vector<std::string> uriSans() { return uri_sans_; }
-  const std::vector<std::string> dnsSans() { return dns_sans_; }
+  std::string& serialNumber() { return serial_number_; } 
+  std::string& issuer() { return issuer_; } 
+  std::string& subject() { return subject_; } 
+  std::string& sha256Digest() { return sha256_digest_; } 
+  bool& validated() { return validated_; }
+  bool& presented() { return presented_; }
+  std::string& uriSans() { return uri_sans_; }
+  std::string& dnsSans() { return dns_sans_; }
 
 private:
   std::string serial_number_;
   std::string issuer_;
   std::string subject_;
   std::string sha256_digest_;
-  
+  std::string uri_sans_;
+  std::string dns_sans_;
+
   bool validated_;  
   bool presented_;
-
-  std::vector<std::string> uri_sans_;
-  std::vector<std::string> dns_sans_;
 };
 
 class TlsLocalCertificateInfo : public TlsCertificateInfo<TlsLocalCertificateInfo> {

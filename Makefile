@@ -8,8 +8,9 @@ UDPA_API = deps/udpa
 ENVOY_TYPE_V3_API = deps/envoy/api/envoy/type/v3
 ENVOY_CONFIG_CORE_V3_API = deps/envoy/api/envoy/config/core/v3
 
+PROTOC_GEN_VALIDATE_API = validate
 ABSL_SRCS = ${ABSL_API}/absl/strings/str_cat.cc ${ABSL_API}/absl/strings/str_split.cc ${ABSL_API}/absl/strings/numbers.cc ${ABSL_API}/absl/strings/ascii.cc
-PROTO_SRCS = envoy/config/filter/http/authn/v2alpha1/config.pb.cc google/api/field_behavior.pb.cc authentication/v1alpha1/policy.pb.cc
+PROTO_SRCS = envoy/config/filter/http/authn/v2alpha1/config.pb.cc google/api/field_behavior.pb.cc authentication/v1alpha1/policy.pb.cc istio/authn/context.pb.cc
 
 all: filter.wasm
 

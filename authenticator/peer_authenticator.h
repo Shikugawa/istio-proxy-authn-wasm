@@ -25,13 +25,20 @@ namespace AuthN {
 
 // PeerAuthenticator performs peer authentication for given policy.
 class PeerAuthenticator : public AuthenticatorBase {
- public:
-  PeerAuthenticator(FilterContext* filter_context,
-                    const istio::authentication::v1alpha1::Policy& policy);
+public:
+  using PeerAuthenticatorPtr = std::unique_ptr<PeerAuthenticator>;
+
+  static PeerAuthenticatorPtr create(FilterContext* filter_context) {
+    return std::make_unique<Istio::AuthN::PeerAuthenticator>(
+      filter_context, filter_context->filterConfig().policy());
+  }
 
   bool run(istio::authn::Payload*) override;
 
- private:
+private:
+  PeerAuthenticator(FilterContext* filter_context,
+                    const istio::authentication::v1alpha1::Policy& policy);
+
   // Reference to the authentication policy that the authenticator should
   // enforce. Typically, the actual object is owned by filter.
   const istio::authentication::v1alpha1::Policy& policy_;

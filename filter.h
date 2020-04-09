@@ -25,7 +25,7 @@
 namespace Envoy {
 namespace Extensions {
 namespace Wasm {
-namespace AuthnWasm {
+namespace AuthN {
 
 using istio::envoy::config::filter::http::authn::v2alpha1::FilterConfig;
 using StringView = absl::string_view;
@@ -90,11 +90,11 @@ public:
   };
 
 private:
-  std::unique_ptr<Istio::AuthN::AuthenticatorBase> createPeerAuthenticator(
-    Istio::AuthN::FilterContext* filter_context);
+  std::unique_ptr<Envoy::Http::Istio::AuthN::AuthenticatorBase> createPeerAuthenticator(
+    Envoy::Http::Istio::AuthN::FilterContext* filter_context);
   // TODO(shikugawa): origin authenticator implementation.
-  // std::unique_ptr<Istio::AuthN::AuthenticatorBase> createOriginAuthenticator(
-  //   Istio::AuthN::FilterContext* filter_context);
+  // std::unique_ptr<istio::AuthN::AuthenticatorBase> createOriginAuthenticator(
+  //   istio::AuthN::FilterContext* filter_context);
 
   inline AuthnRootContext* rootContext() {
     return dynamic_cast<AuthnRootContext*>(this->root());
@@ -102,7 +102,7 @@ private:
 
   // Context for authentication process. Created in decodeHeader to start
   // authentication process.
-  std::unique_ptr<Istio::AuthN::FilterContext> filter_context_;
+  std::unique_ptr<Envoy::Http::Istio::AuthN::FilterContext> filter_context_;
 };
 
 static RegisterContextFactory register_AuthnWasm(
